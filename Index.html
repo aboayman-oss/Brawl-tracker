@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>⭐ Brawl Tracker</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg:       #080d1a;
+      --bg-card:  #0f1729;
+      --bg-surf:  #1a2647;
+      --gold:     #ffd700;
+      --orange:   #ff8f00;
+      --green:    #22c55e;
+      --red:      #ef4444;
+      --blue:     #38bdf8;
+      --text:     #e2e8f0;
+      --muted:    #5a6f8c;
+      --border:   #1e2f4d;
+      --radius:   14px;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    /* ── Starfield bg ── */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background:
+        radial-gradient(ellipse at 15% 10%, rgba(255,215,0,.07) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 90%, rgba(56,189,248,.05) 0%, transparent 55%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .wrap {
+      position: relative;
+      z-index: 1;
+      max-width: 480px;
+      margin: 0 auto;
+      padding: 0 14px 40px;
+    }
+
+    /* ── Header ── */
+    .app-header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: rgba(8,13,26,.92);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+      margin: 0 -14px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .app-title {
+      font-family: 'Bangers', cursive;
+      font-size: 26px;
+      letter-spacing: 2px;
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    .header-btns { display: flex; gap: 8px; }
+    .icon-btn {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+      font-size: 16px;
+      padding: 7px 11px;
+      cursor: pointer;
+      line-height: 1;
+      transition: all .2s;
+    }
+    .icon-btn:active { background: var(--bg-surf); color: var(--gold); }
+
+    /* ── Setup screen ── */
+    #setup-screen { padding: 20px 0; }
+    .setup-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 24px;
+    }
+    .setup-card h2 {
+      font-family: 'Bangers', cursive;
+      font-size: 26px;
+      letter-spacing: 1px;
+      color: var(--gold);
+      margin-bottom: 4px;
+    }
+    .setup-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.5;
+      margin-bottom: 22px;
+    }
+    .setup-desc a { color: var(--gold); text-decoration: none; }
+
+    .input-label {
+      display: block;
+      font-size: 11px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      margin-bottom: 5px;
+    }
+    .text-input {
+      width: 100%;
+      background: var(--bg-surf);
+      border: 1.5px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-family: 'Nunito', sans-serif;
+      font-size: 14px;
+      font-weight: 700;
+      padding: 11px 14px;
+      outline: none;
+      margin-bottom: 14px;
+      transition: border-color .2s;
+    }
+    .text-input:focus { border-color: var(--gold); }
+    .text-input::placeholder { color: var(--muted); opacity: .5; }
+
+    .tags-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .tags-row .text-input { margin-bottom: 0; }
+
+    .btn-save {
+      width: 100%;
+      margin-top: 18px;
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      border: none;
+      border-radius: 12px;
+      color: #080d1a;
+      font-family: 'Bangers', cursive;
+      font-size: 22px;
+      letter-spacing: 1px;
+      padding: 13px;
+      cursor: pointer;
+      transition: opacity .2s, transform .1s;
+    }
+    .btn-save:active { transform: scale(.98); opacity: .88; }
+
+    .how-to {
+      margin-top: 20px;
+      background: rgba(255,215,0,.05);
+      border: 1px solid rgba(255,215,0,.18);
+      border-radius: 12px;
+      padding: 16px;
+    }
+    .how-to h3 {
+      font-size: 11px;
+      font-weight: 900;
+      color: var(--gold);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      margin-bottom: 10px;
+    }
+    .how-to ol { font-size: 12px; color: var(--muted); line-height: 1.9; padding-left: 16px; }
+    .how-to code {
+      background: rgba(255,215,0,.12);
+      color: var(--gold);
+      padding: 1px 6px;
+      border-radius: 5px;
+      font-family: monospace;
+      font-size: 11px;
+    }
+
+    /* ── Error / Loading ── */
+    #err-box {
+      display: none;
+      background: rgba(239,68,68,.1);
+      border: 1px solid rgba(239,68,68,.3);
+      border-radius: 12px;
+      padding: 14px 16px;
+      margin: 14px 0 0;
+      color: var(--red);
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.4;
+    }
+    #loading-box {
+      display: none;
+      text-align: center;
+      padding: 48px 0;
+    }
+    .spinner {
+      width: 44px;
+      height: 44px;
+      border: 3px solid var(--border);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 0 auto 14px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Main content ── */
+    #content { display: none; }
+
+    /* ── Trophy difference ── */
+    .diff-banner {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 22px 20px 18px;
+      margin: 16px 0 14px;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .diff-banner::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at 50% 0%, rgba(255,215,0,.09) 0%, transparent 65%);
+      pointer-events: none;
+    }
+    .diff-eyebrow {
+      font-size: 10px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: 2.5px;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+    .diff-num {
+      font-family: 'Bangers', cursive;
+      font-size: 68px;
+      line-height: 1;
+      letter-spacing: 2px;
+      transition: color .4s;
+    }
+    .diff-num.pos { color: var(--green); }
+    .diff-num.neg { color: var(--red); }
+    .diff-num.tie { color: var(--gold); }
+    .diff-sub {
+      font-size: 13px;
+      color: var(--muted);
+      font-weight: 700;
+      margin-top: 4px;
+      margin-bottom: 14px;
+    }
+
+    /* Progress bar */
+    .prog-bar {
+      height: 7px;
+      background: var(--bg-surf);
+      border-radius: 99px;
+      overflow: hidden;
+      margin-bottom: 6px;
+    }
+    .prog-fill {
+      height: 100%;
+      border-radius: 99px;
+      background: linear-gradient(90deg, var(--gold), var(--orange));
+      transition: width .7s ease;
+    }
+    .prog-labels {
+      display: flex;
+      justify-content: space-between;
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--muted);
+    }
+    .prog-labels .you-lbl { color: var(--gold); }
+
+    /* ── Player cards ── */
+    .players-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 16px;
+    }
+    .pcard {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px 10px 14px;
+      text-align: center;
+      position: relative;
+    }
+    .pcard.me {
+      border-color: rgba(255,215,0,.35);
+      background: linear-gradient(160deg, rgba(255,215,0,.04) 0%, var(--bg-card) 60%);
+    }
+    .you-chip {
+      position: absolute;
+      top: -1px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: linear-gradient(135deg, var(--gold), var(--orange));
+      color: #080d1a;
+      font-family: 'Bangers', cursive;
+      font-size: 10px;
+      letter-spacing: 1px;
+      padding: 2px 12px 2px;
+      border-radius: 0 0 10px 10px;
+      white-space: nowrap;
+    }
+    .pcard-avatar {
+      width: 54px;
+      height: 54px;
+      border-radius: 50%;
+      background: var(--bg-surf);
+      border: 2px solid var(--border);
+      margin: 6px auto 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .pcard.me .pcard-avatar { border-color: rgba(255,215,0,.5); }
+    .pcard-avatar img { width: 100%; height: 100%; object-fit: cover; border-radius: 50%; }
+    .pcard-avatar-fallback { font-size: 26px; }
+    .pcard-name {
+      font-family: 'Bangers', cursive;
+      font-size: 17px;
+      letter-spacing: .5px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .pcard-tag { font-size: 9px; color: var(--muted); margin: 1px 0 8px; }
+    .pcard-trophies {
+      font-family: 'Bangers', cursive;
+      font-size: 30px;
+      letter-spacing: 1px;
+      color: var(--gold);
+      line-height: 1;
+    }
+    .pcard-trophy-label {
+      font-size: 9px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+    .pcard-meta { font-size: 11px; color: var(--muted); line-height: 1.7; }
+    .pcard-meta .highlight { color: var(--blue); font-weight: 700; }
+    .pcard-meta .club { 
+      font-size: 10px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    /* ── Stats table ── */
+    .sec-title {
+      font-family: 'Bangers', cursive;
+      font-size: 18px;
+      letter-spacing: 1px;
+      color: var(--gold);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .sec-title::after { content: ''; flex: 1; height: 1px; background: var(--border); }
+
+    .stats-box {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+    .stat-row {
+      display: grid;
+      grid-template-columns: 1fr 80px 1fr;
+      align-items: center;
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border);
+      gap: 4px;
+    }
+    .stat-row:last-child { border-bottom: none; }
+    .sv {
+      font-family: 'Bangers', cursive;
+      font-size: 19px;
+      letter-spacing: .5px;
+    }
+    .sv.left { text-align: right; }
+    .sv.right { text-align: left; }
+    .sv.w { color: var(--green); }
+    .sv.l { color: var(--muted); }
+    .sv.t { color: var(--text); }
+    .sl {
+      text-align: center;
+      font-size: 9.5px;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: .5px;
+      color: var(--muted);
+      line-height: 1.3;
+    }
+
+    /* ── Brawlers ── */
+    .brawlers-wrap { margin-bottom: 18px; }
+    .brawler-sub {
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 8px;
+    }
+    .brawler-sub span { color: var(--text); }
+    .brawlers-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 7px;
+      margin-bottom: 12px;
+    }
+    .bcard {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 9px 6px 8px;
+      text-align: center;
+    }
+    .bcard-img {
+      width: 46px;
+      height: 46px;
+      border-radius: 8px;
+      margin: 0 auto 5px;
+      display: block;
+      background: var(--bg-surf);
+    }
+    .bcard-img-fallback {
+      width: 46px;
+      height: 46px;
+      border-radius: 8px;
+      margin: 0 auto 5px;
+      background: var(--bg-surf);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .bcard-name {
+      font-size: 9px;
+      font-weight: 900;
+      text-transform: uppercase;
+      letter-spacing: .3px;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      margin-bottom: 2px;
+    }
+    .bcard-trophies {
+      font-family: 'Bangers', cursive;
+      font-size: 15px;
+      color: var(--gold);
+      letter-spacing: .3px;
+    }
+    .bcard-rank {
+      font-size: 9px;
+      font-weight: 800;
+      padding: 1px 7px;
+      border-radius: 99px;
+      margin-top: 3px;
+      display: inline-block;
+    }
+    .r-gray { background: rgba(255,255,255,.07); color: #6b7280; }
+    .r-blue { background: rgba(56,189,248,.15); color: #38bdf8; }
+    .r-purple { background: rgba(192,132,252,.15); color: #c084fc; }
+    .r-gold { background: rgba(251,191,36,.18); color: #fbbf24; }
+    .r-diamond { background: linear-gradient(135deg,rgba(255,215,0,.25),rgba(255,100,0,.2)); color: #ffd700; border: 1px solid rgba(255,215,0,.3); }
+
+    /* ── Footer ── */
+    .footer {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 14px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .footer-info { }
+    .last-upd { font-size: 11px; color: var(--muted); }
+    .countdown { font-size: 10px; color: var(--muted); margin-top: 2px; }
+    .footer-btns { display: flex; gap: 8px; }
+    .btn-refresh {
+      background: linear-gradient(135deg, rgba(255,215,0,.15), rgba(255,143,0,.1));
+      border: 1px solid rgba(255,215,0,.25);
+      border-radius: 10px;
+      color: var(--gold);
+      font-family: 'Nunito', sans-serif;
+      font-size: 13px;
+      font-weight: 800;
+      padding: 8px 14px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      transition: all .2s;
+      white-space: nowrap;
+    }
+    .btn-refresh:active { background: var(--gold); color: #080d1a; border-color: var(--gold); }
+    .spin-icon { display: inline-block; }
+    .spinning .spin-icon { animation: spin .6s linear infinite; }
+
+    /* ── Animations ── */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(14px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+    .anim { animation: fadeUp .45s ease both; }
+    .anim-d1 { animation-delay: .05s; }
+    .anim-d2 { animation-delay: .12s; }
+    .anim-d3 { animation-delay: .2s; }
+    .anim-d4 { animation-delay: .28s; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="wrap">
+
+  <!-- Header -->
+  <div class="app-header">
+    <div class="app-title">⭐ BRAWL TRACKER</div>
+    <div class="header-btns">
+      <button class="icon-btn" onclick="openSetup()" title="Settings">⚙️</button>
+    </div>
+  </div>
+
+  <!-- Setup Screen -->
+  <div id="setup-screen">
+    <div class="setup-card" style="margin-top:18px">
+      <h2>🔑 Quick Setup</h2>
+      <p class="setup-desc">
+        Enter your API key and player tags once — everything is saved on your device.
+        Get a free key at <a href="https://developer.brawlstars.com" target="_blank">developer.brawlstars.com</a>
+      </p>
+
+      <label class="input-label">Brawl Stars API Key</label>
+      <input class="text-input" type="password" id="inp-key" placeholder="eyJ0eXAiOiJKV1Qi…" autocomplete="off" spellcheck="false">
+
+      <div class="tags-row" style="margin-bottom:18px">
+        <div>
+          <label class="input-label">Your Tag (no #)</label>
+          <input class="text-input" type="text" id="inp-you" placeholder="POCCCGRYL" autocomplete="off">
+        </div>
+        <div>
+          <label class="input-label">Friend's Tag (no #)</label>
+          <input class="text-input" type="text" id="inp-friend" placeholder="8LCUR8CLP" autocomplete="off">
+        </div>
+      </div>
+
+      <button class="btn-save" onclick="saveSetup()">LET'S GO 🏆</button>
+
+      <div class="how-to" style="margin-top:18px">
+        <h3>⚡ How to get your API key (2 min)</h3>
+        <ol>
+          <li>Go to <strong>developer.brawlstars.com</strong> → log in</li>
+          <li>My Account → API Keys → <strong>New Key</strong></li>
+          <li>For IP address enter: <code>45.79.218.79</code></li>
+          <li>Copy the generated key and paste it above</li>
+        </ol>
+        <div style="margin-top:8px;font-size:11px;color:var(--muted);">
+          Using IP <code>45.79.218.79</code> lets this app work from any network — home, mobile data, anywhere.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Main App -->
+  <div id="main-app" class="hidden">
+    <div id="err-box"></div>
+    <div id="loading-box">
+      <div class="spinner"></div>
+      <div style="color:var(--muted);font-size:13px;font-weight:700">Fetching live stats…</div>
+    </div>
+    <div id="content">
+
+      <!-- Trophy Difference -->
+      <div class="diff-banner anim anim-d1">
+        <div class="diff-eyebrow">🏆 Trophy Difference</div>
+        <div class="diff-num tie" id="diff-num">—</div>
+        <div class="diff-sub" id="diff-sub">Loading…</div>
+        <div class="prog-bar">
+          <div class="prog-fill" id="prog-fill" style="width:50%"></div>
+        </div>
+        <div class="prog-labels">
+          <span class="you-lbl" id="prog-lbl-you">You</span>
+          <span id="prog-lbl-friend">Friend</span>
+        </div>
+      </div>
+
+      <!-- Player Cards -->
+      <div class="players-row anim anim-d2">
+        <div class="pcard me" id="pcard-you">
+          <div class="you-chip">YOU</div>
+          <div class="pcard-avatar" id="av-you">
+            <span class="pcard-avatar-fallback">👤</span>
+          </div>
+          <div class="pcard-name" id="name-you">—</div>
+          <div class="pcard-tag" id="tag-you">—</div>
+          <div class="pcard-trophies" id="tr-you">—</div>
+          <div class="pcard-trophy-label">🏆 trophies</div>
+          <div class="pcard-meta">
+            Lvl <span class="highlight" id="lvl-you">—</span> &nbsp;·&nbsp; Max <span id="maxtr-you">—</span>
+            <br><span class="club" id="club-you">—</span>
+          </div>
+        </div>
+        <div class="pcard" id="pcard-friend">
+          <div class="pcard-avatar" id="av-friend">
+            <span class="pcard-avatar-fallback">👤</span>
+          </div>
+          <div class="pcard-name" id="name-friend">—</div>
+          <div class="pcard-tag" id="tag-friend">—</div>
+          <div class="pcard-trophies" id="tr-friend">—</div>
+          <div class="pcard-trophy-label">🏆 trophies</div>
+          <div class="pcard-meta">
+            Lvl <span class="highlight" id="lvl-friend">—</span> &nbsp;·&nbsp; Max <span id="maxtr-friend">—</span>
+            <br><span class="club" id="club-friend">—</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stats Comparison -->
+      <div class="anim anim-d3">
+        <div class="sec-title">📊 STATS</div>
+        <div class="stats-box" id="stats-box"></div>
+      </div>
+
+      <!-- Top Brawlers -->
+      <div class="brawlers-wrap anim anim-d4">
+        <div class="sec-title">🎮 TOP BRAWLERS</div>
+
+        <div class="brawler-sub" id="bsub-you">YOUR TOP BRAWLERS</div>
+        <div class="brawlers-grid" id="bg-you"></div>
+
+        <div class="brawler-sub" id="bsub-friend">FRIEND'S TOP BRAWLERS</div>
+        <div class="brawlers-grid" id="bg-friend"></div>
+      </div>
+
+    </div><!-- #content -->
+
+    <!-- Footer -->
+    <div class="footer">
+      <div class="footer-info">
+        <div class="last-upd" id="last-upd">Not yet updated</div>
+        <div class="countdown" id="countdown"></div>
+      </div>
+      <div class="footer-btns">
+        <button class="btn-refresh" id="refresh-btn" onclick="doRefresh()">
+          <span class="spin-icon">🔄</span> Refresh
+        </button>
+      </div>
+    </div>
+
+  </div><!-- #main-app -->
+</div><!-- .wrap -->
+
+<script>
+/* =============================================
+   CONFIG
+============================================= */
+const DEFAULT_YOU    = 'POCCCGRYL';
+const DEFAULT_FRIEND = '8LCUR8CLP';
+const REFRESH_INTERVAL = 60; // seconds
+
+const ROYALE_PROXY = 'https://proxy.royaleapi.dev/v1';
+const BS_API       = 'https://api.brawlstars.com/v1';
+const CORS_WRAP    = 'https://corsproxy.io/?url=';
+
+/* =============================================
+   STATE
+============================================= */
+let cfg = { key: '', you: DEFAULT_YOU, friend: DEFAULT_FRIEND };
+let countdown = REFRESH_INTERVAL;
+let timerID = null;
+let cdTimerID = null;
+
+/* =============================================
+   BOOTSTRAP
+============================================= */
+function boot() {
+  const saved = localStorage.getItem('bst_cfg');
+  if (saved) {
+    try { cfg = { ...cfg, ...JSON.parse(saved) }; } catch(_) {}
+  }
+  if (cfg.key) {
+    enterApp();
+    loadData();
+  } else {
+    prefillSetup();
+  }
+}
+
+function prefillSetup() {
+  document.getElementById('inp-you').value    = cfg.you    || DEFAULT_YOU;
+  document.getElementById('inp-friend').value = cfg.friend || DEFAULT_FRIEND;
+}
+
+/* =============================================
+   SETUP
+============================================= */
+function saveSetup() {
+  const key    = document.getElementById('inp-key').value.trim();
+  const you    = document.getElementById('inp-you').value.trim().toUpperCase().replace(/#/g,'');
+  const friend = document.getElementById('inp-friend').value.trim().toUpperCase().replace(/#/g,'');
+  if (!key)    { showErr('Please paste your API key above.'); return; }
+  if (!you)    { showErr('Enter your player tag.'); return; }
+  if (!friend) { showErr('Enter your friend\'s tag.'); return; }
+  cfg = { key, you, friend };
+  localStorage.setItem('bst_cfg', JSON.stringify(cfg));
+  enterApp();
+  loadData();
+}
+
+function openSetup() {
+  document.getElementById('setup-screen').classList.remove('hidden');
+  document.getElementById('main-app').classList.add('hidden');
+  document.getElementById('inp-key').value    = cfg.key    || '';
+  document.getElementById('inp-you').value    = cfg.you    || DEFAULT_YOU;
+  document.getElementById('inp-friend').value = cfg.friend || DEFAULT_FRIEND;
+  clearTimers();
+}
+
+function enterApp() {
+  document.getElementById('setup-screen').classList.add('hidden');
+  document.getElementById('main-app').classList.remove('hidden');
+}
+
+/* =============================================
+   API FETCH
+============================================= */
+async function fetchPlayer(tag) {
+  const encoded = encodeURIComponent('#' + tag);
+
+  // Primary: RoyaleAPI proxy (uses fixed IP 45.79.218.79 — the one you whitelist)
+  const primaryUrl  = `${ROYALE_PROXY}/players/${encoded}`;
+  // Fallback: corsproxy.io wrapping official API
+  const officialUrl = `${BS_API}/players/${encoded}`;
+  const fallbackUrl = `${CORS_WRAP}${encodeURIComponent(officialUrl)}`;
+
+  const headers = {
+    'Authorization': `Bearer ${cfg.key}`,
+    'Accept': 'application/json',
+  };
+
+  async function tryFetch(url, hdrs) {
+    const r = await fetch(url, { headers: hdrs });
+    if (r.ok) return r.json();
+    const body = await r.text().catch(()=>'');
+    if (r.status === 401 || r.status === 403) throw new Error(`Auth error (${r.status}): Key invalid or IP not whitelisted. Make sure you added 45.79.218.79 to your key.`);
+    if (r.status === 404) throw new Error(`Player #${tag} not found.`);
+    throw new Error(`HTTP ${r.status}: ${body.slice(0,120)}`);
+  }
+
+  // Try primary, fall back on network/CORS error
+  try {
+    return await tryFetch(primaryUrl, headers);
+  } catch(e) {
+    if (e.message.startsWith('Auth') || e.message.startsWith('Player')) throw e;
+    console.warn('Primary proxy failed, trying CORS fallback:', e.message);
+    return await tryFetch(fallbackUrl, headers);
+  }
+}
+
+/* =============================================
+   LOAD & REFRESH
+============================================= */
+async function loadData() {
+  setLoading(true);
+  hideErr();
+  clearTimers();
+
+  try {
+    const [p1, p2] = await Promise.all([
+      fetchPlayer(cfg.you),
+      fetchPlayer(cfg.friend),
+    ]);
+    render(p1, p2);
+    showContent(true);
+    document.getElementById('last-upd').textContent = 'Updated ' + timeStr();
+    startCountdown();
+  } catch(e) {
+    showErr(e.message || 'Unknown error. Check your API key and tags.');
+    if (document.getElementById('content').style.display !== 'none') {
+      // keep showing old data
+    }
+  } finally {
+    setLoading(false);
+  }
+}
+
+function doRefresh() {
+  clearTimers();
+  loadData();
+}
+
+function startCountdown() {
+  countdown = REFRESH_INTERVAL;
+  timerID = setInterval(loadData, REFRESH_INTERVAL * 1000);
+  cdTimerID = setInterval(() => {
+    countdown--;
+    const el = document.getElementById('countdown');
+    if (el) el.textContent = `Auto-refresh in ${countdown}s`;
+    if (countdown <= 0) countdown = REFRESH_INTERVAL;
+  }, 1000);
+}
+
+function clearTimers() {
+  clearInterval(timerID);
+  clearInterval(cdTimerID);
+  timerID = null;
+  cdTimerID = null;
+  const el = document.getElementById('countdown');
+  if (el) el.textContent = '';
+}
+
+/* =============================================
+   RENDER
+============================================= */
+function render(p1, p2) {
+  renderDiff(p1, p2);
+  renderCard(p1, 'you');
+  renderCard(p2, 'friend');
+  renderStats(p1, p2);
+  renderBrawlers(p1, 'you');
+  renderBrawlers(p2, 'friend');
+}
+
+function renderDiff(p1, p2) {
+  const d = p1.trophies - p2.trophies;
+  const numEl = document.getElementById('diff-num');
+  const subEl = document.getElementById('diff-sub');
+
+  numEl.textContent = (d > 0 ? '+' : '') + n(d) + ' 🏆';
+  numEl.className   = 'diff-num ' + (d > 0 ? 'pos' : d < 0 ? 'neg' : 'tie');
+
+  if      (d > 0) subEl.textContent = `You're ahead of ${p2.name}`;
+  else if (d < 0) subEl.textContent = `${p2.name} leads by ${n(Math.abs(d))}`;
+  else            subEl.textContent = '🤝 Perfectly tied!';
+
+  const total = p1.trophies + p2.trophies;
+  const pct   = total > 0 ? (p1.trophies / total * 100) : 50;
+  document.getElementById('prog-fill').style.width = pct.toFixed(1) + '%';
+  document.getElementById('prog-lbl-you').textContent    = `${p1.name}: ${n(p1.trophies)}`;
+  document.getElementById('prog-lbl-friend').textContent = `${p2.name}: ${n(p2.trophies)}`;
+}
+
+function renderCard(p, side) {
+  set(`name-${side}`,  p.name);
+  set(`tag-${side}`,   p.tag);
+  set(`tr-${side}`,    n(p.trophies));
+  set(`lvl-${side}`,   p.expLevel);
+  set(`maxtr-${side}`, n(p.highestTrophies));
+  set(`club-${side}`,  p.club ? '🏰 ' + p.club.name : 'No club');
+
+  // Apply name color if present
+  if (p.nameColor) {
+    const hex = '#' + p.nameColor.replace(/^0x[fF]{2}/, '');
+    const nameEl = document.getElementById(`name-${side}`);
+    if (nameEl && hex.length === 7) nameEl.style.color = hex;
+  }
+
+  // Avatar
+  if (p.icon && p.icon.id) {
+    const avEl = document.getElementById(`av-${side}`);
+    const img  = document.createElement('img');
+    img.src    = `https://cdn.brawlify.com/profile-icons/regular/${p.icon.id}.png`;
+    img.alt    = p.name;
+    img.onerror = () => { img.remove(); };
+    avEl.innerHTML = '';
+    avEl.appendChild(img);
+  }
+}
+
+function renderStats(p1, p2) {
+  const rows = [
+    ['🏆', 'Trophies',         p1.trophies,                                    p2.trophies],
+    ['📈', 'Highest Trophies', p1.highestTrophies,                             p2.highestTrophies],
+    ['⭐', 'Exp Level',        p1.expLevel,                                    p2.expLevel],
+    ['🤝', '3v3 Wins',         p1['3vs3Victories'],                            p2['3vs3Victories']],
+    ['🥊', 'Solo Wins',        p1.soloVictories,                               p2.soloVictories],
+    ['👥', 'Duo Wins',         p1.duoVictories,                                p2.duoVictories],
+    ['🎮', 'Brawlers',         p1.brawlers.length,                             p2.brawlers.length],
+    ['⚡', 'Power 11',         p1.brawlers.filter(b=>b.power===11).length,     p2.brawlers.filter(b=>b.power===11).length],
+    ['🌟', 'Rank 25+',         p1.brawlers.filter(b=>b.rank>=25).length,       p2.brawlers.filter(b=>b.rank>=25).length],
+    ['💎', 'Rank 30+',         p1.brawlers.filter(b=>b.rank>=30).length,       p2.brawlers.filter(b=>b.rank>=30).length],
+    ['🔥', 'Rank 35',          p1.brawlers.filter(b=>b.rank>=35).length,       p2.brawlers.filter(b=>b.rank>=35).length],
+  ];
+
+  document.getElementById('stats-box').innerHTML = rows.map(([ico, lbl, v1, v2]) => {
+    const c1 = v1 > v2 ? 'w' : v1 < v2 ? 'l' : 't';
+    const c2 = v2 > v1 ? 'w' : v2 < v1 ? 'l' : 't';
+    return `<div class="stat-row">
+      <div class="sv left ${c1}">${n(v1)}</div>
+      <div class="sl">${ico}<br>${lbl}</div>
+      <div class="sv right ${c2}">${n(v2)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderBrawlers(player, side) {
+  const top6 = [...player.brawlers].sort((a,b) => b.trophies - a.trophies).slice(0, 6);
+  document.getElementById(`bsub-${side}`).innerHTML =
+    `<span>${player.name}</span>'s TOP BRAWLERS`;
+
+  document.getElementById(`bg-${side}`).innerHTML = top6.map(b => {
+    const rc  = rankClass(b.rank);
+    const img = `https://cdn.brawlify.com/brawlers/borderless/${b.id}.webp`;
+    const nameFmt = b.name.charAt(0) + b.name.slice(1).toLowerCase();
+    return `<div class="bcard">
+      <img class="bcard-img" src="${img}" alt="${nameFmt}"
+           onerror="this.outerHTML='<div class=bcard-img-fallback>🎯</div>'">
+      <div class="bcard-name">${nameFmt}</div>
+      <div class="bcard-trophies">🏆${n(b.trophies)}</div>
+      <span class="bcard-rank ${rc}">R${b.rank} P${b.power}</span>
+    </div>`;
+  }).join('');
+}
+
+/* =============================================
+   HELPERS
+============================================= */
+function n(val) {
+  if (val == null) return '—';
+  return Number(val).toLocaleString();
+}
+function set(id, txt) {
+  const el = document.getElementById(id);
+  if (el) el.textContent = txt;
+}
+function timeStr() {
+  return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+}
+function rankClass(r) {
+  if (r >= 35) return 'r-diamond';
+  if (r >= 30) return 'r-gold';
+  if (r >= 25) return 'r-purple';
+  if (r >= 10) return 'r-blue';
+  return 'r-gray';
+}
+function showErr(msg) {
+  const el = document.getElementById('err-box');
+  el.textContent = '⚠️ ' + msg;
+  el.style.display = 'block';
+}
+function hideErr() {
+  document.getElementById('err-box').style.display = 'none';
+}
+function setLoading(on) {
+  document.getElementById('loading-box').style.display = on ? 'block' : 'none';
+  const btn = document.getElementById('refresh-btn');
+  if (btn) btn.classList.toggle('spinning', on);
+}
+function showContent(on) {
+  document.getElementById('content').style.display = on ? 'block' : 'none';
+}
+
+/* =============================================
+   RUN
+============================================= */
+boot();
+</script>
+</body>
+</html>
